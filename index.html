@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <title>CHRISTMAS SIGNAL // HOLIDAY PROTOCOL</title>
+    <meta
+      name="description"
+      content="A glitchy Christmas countdown. When the signal hits zero, the celebration unlocks."
+    />
+
+    <!-- Social preview (optional) -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CHRISTMAS SIGNAL // COUNTDOWN ACTIVE" />
+    <meta
+      name="twitter:description"
+      content="Awaiting the Christmas signal. When the timer ends, the celebration page unlocks."
+    />
+    <meta name="twitter:image" content="preview.jpg" />
+    <meta property="og:title" content="CHRISTMAS SIGNAL // HOLIDAY PROTOCOL" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="preview.jpg" />
+    <meta
+      property="og:description"
+      content="A glitchy Christmas countdown. Celebration unlocks at zero."
+    />
+
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <meta name="theme-color" content="#000000" />
+
+    <style>
+      :root {
+        --bg: #000;
+        --green: #33ff33;
+        --red: #ff0000;
+        --dim: #111;
+        --soft: rgba(255, 0, 0, 0.8);
+      }
+
+      body {
+        background-color: var(--bg);
+        color: var(--green);
+        font-family: "Courier New", Courier, monospace;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        user-select: none;
+        cursor: crosshair;
+        -webkit-tap-highlight-color: transparent; /* Mobile: disable tap highlight */
+      }
+
+      /* Scanlines */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.1),
+          rgba(0, 0, 0, 0.1) 1px,
+          transparent 1px,
+          transparent 2px
+        );
+        pointer-events: none;
+        z-index: 99;
+      }
+
+      /* ====== Reduce Effects Mode ====== */
+
+      body.reduce-effects {
+        cursor: default;
+      }
+      body.reduce-effects::before {
+        opacity: 0.4;
+      }
+      body.reduce-effects * {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+      body.reduce-effects .hard-glitch,
+      body.reduce-effects .shake-screen {
+        display: none !important;
+        animation: none !important;
+      }
+
+      /* Glitch layer */
+      @keyframes noise-anim {
+        0% {
+          clip-path: inset(40% 0 61% 0);
+          transform: translate(-20px, -10px);
+        }
+        20% {
+          clip-path: inset(92% 0 1% 0);
+          transform: translate(20px, 10px);
+        }
+        40% {
+          clip-path: inset(43% 0 1% 0);
+          transform: translate(-20px, 10px);
+        }
+        60% {
+          clip-path: inset(25% 0 58% 0);
+          transform: translate(20px, -10px);
+        }
+        80% {
+          clip-path: inset(54% 0 7% 0);
+          transform: translate(-20px, 10px);
+        }
+        100% {
+          clip-path: inset(58% 0 43% 0);
+          transform: translate(20px, -10px);
+        }
+      }
+      .hard-glitch {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+        color: #fff;
+        animation: noise-anim 0.2s infinite linear alternate-reverse;
+        display: none;
+        z-index: 200;
+        opacity: 0.8;
+        filter: contrast(200%) brightness(150%);
+      }
+      .hard-glitch::before {
+        content: "CHRISTMAS SIGNAL // SYNCING";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 4em;
+        color: var(--red);
+        font-weight: bold;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      /* Screen shake */
+      .shake-screen {
+        animation: shake 0.1s infinite;
+      }
+      @keyframes shake {
+        0% {
+          transform: translate(1px, 1px);
+        }
+        50% {
+          transform: translate(-1px, -2px);
+        }
+        100% {
+          transform: translate(1px, -1px);
+        }
+      }
+
+      /* Secret layer (Easter egg) */
+      #secret-layer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 150;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        border: 2px solid var(--green);
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      #secret-msg {
+        font-size: 2.6em;
+        color: var(--green);
+        text-shadow: 0 0 20px var(--green);
+        margin-bottom: 16px;
+        font-weight: bold;
+        text-align: center;
+      }
+      .secret-detail {
+        color: #fff;
+        font-size: 1.05em;
+        max-width: 680px;
+        text-align: center;
+        font-family: monospace;
+        line-height: 1.5;
+      }
+      .blink-text {
+        animation: blink-anim 1s infinite;
+        color: var(--red);
+      }
+      @keyframes blink-anim {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* Entry overlay */
+      #entry-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+        cursor: pointer;
+      }
+      #entry-text {
+        border: 1px solid var(--green);
+        padding: 20px 22px;
+        font-size: 1.1em;
+        letter-spacing: 3px;
+        animation: pulse-entry 1s infinite alternate;
+        text-align: center;
+      }
+      @keyframes pulse-entry {
+        from {
+          box-shadow: 0 0 2px var(--green);
+          opacity: 0.75;
+        }
+        to {
+          box-shadow: 0 0 15px var(--green);
+          opacity: 1;
+        }
+      }
+
+      /* Intro sequence */
+      #intro-sequence {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 90;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      #intro-text {
+        font-size: 4.5em;
+        font-weight: bold;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 10px;
+        text-align: center;
+        word-break: break-word;
+      }
+
+      /* TV turn-off */
+      .tv-off {
+        animation: turn-off 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+      }
+      @keyframes turn-off {
+        0% {
+          transform: scale(1, 1.3);
+          filter: brightness(1);
+        }
+        50% {
+          transform: scale(1.3, 0.001);
+          filter: brightness(10);
+        }
+        100% {
+          transform: scale(0, 0);
+          filter: brightness(50);
+          opacity: 0;
+        }
+      }
+
+      /* Terminal container */
+      #terminal-container {
+        width: 80%;
+        max-width: 860px;
+        white-space: pre-wrap;
+        display: none;
+        position: relative;
+        z-index: 10;
+        line-height: 1.35;
+      }
+      .cursor {
+        display: inline-block;
+        width: 10px;
+        height: 1.2em;
+        background-color: var(--green);
+        animation: blink 0.1s step-end infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* Progress bar */
+      #progress-container {
+        width: 100%;
+        height: 2px;
+        background: var(--dim);
+        margin-top: 15px;
+        display: none;
+      }
+      #progress-bar {
+        width: 0%;
+        height: 100%;
+        background: var(--green);
+        transition: width 0.05s;
+      }
+
+      /* Countdown */
+      #countdown {
+        margin-top: 30px;
+        font-size: 1.1em;
+        color: var(--red);
+        display: none;
+        text-align: center;
+        letter-spacing: 2px;
+      }
+      #timer {
+        display: block;
+        margin-top: 10px;
+        font-size: 2.4em;
+        font-weight: bold;
+        letter-spacing: 4px;
+        color: var(--red);
+        text-shadow: 0 0 15px var(--soft);
+        animation: breathe-red 1.2s infinite ease-in-out;
+      }
+      @keyframes breathe-red {
+        0% {
+          opacity: 0.75;
+          text-shadow: 0 0 5px var(--red);
+          transform: scale(1);
+        }
+        15% {
+          opacity: 1;
+          text-shadow: 0 0 30px var(--red);
+          transform: scale(1.03);
+        }
+        100% {
+          opacity: 0.75;
+          text-shadow: 0 0 5px var(--red);
+          transform: scale(1);
+        }
+      }
+
+      /* Fake trace log */
+      .trace-log {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        font-size: 10px;
+        color: #005500;
+        font-family: monospace;
+        opacity: 0.7;
+        pointer-events: none;
+        text-align: left;
+        display: none;
+        max-width: 60vw;
+      }
+
+      /* Reveal link */
+      #hidden-link {
+        display: none;
+        margin-top: 25px;
+        color: #000;
+        background: var(--red);
+        padding: 14px 26px;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 0 20px var(--red);
+        font-size: 1.05em;
+        border-radius: 10px;
+        letter-spacing: 2px;
+      }
+      #hidden-link:hover {
+        background: #fff;
+      }
+
+      /* Reduce effects toggle */
+      #reduce-toggle {
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        z-index: 250;
+        border: 1px solid var(--green);
+        background: rgba(0, 0, 0, 0.7);
+        color: var(--green);
+        font-family: inherit;
+        padding: 10px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        letter-spacing: 1px;
+        font-size: 12px;
+      }
+      #reduce-toggle:hover {
+        background: rgba(0, 0, 0, 0.9);
+        box-shadow: 0 0 10px rgba(51, 255, 51, 0.25);
+      }
+
+      /* Mobile responsiveness
+    */
+      @media (max-width: 768px) {
+        #intro-text {
+          font-size: 3em;
+          letter-spacing: 5px;
+        }
+        .hard-glitch::before {
+          font-size: 2.5em;
+          white-space: normal;
+          padding: 0 10px;
+        }
+        #terminal-container {
+          width: 92%;
+          font-size: 0.92em;
+        }
+        #timer {
+          font-size: 1.8em;
+          letter-spacing: 2px;
+        }
+        #countdown {
+          font-size: 1em;
+          margin-top: 20px;
+        }
+        #secret-msg {
+          font-size: 2em;
+        }
+        .secret-detail {
+          font-size: 0.98em;
+        }
+        #entry-text {
+          font-size: 1em;
+          padding: 22px;
+        }
+        .trace-log {
+          font-size: 8px;
+          bottom: 6px;
+          left: 6px;
+        }
+      }
+      @media (max-width: 380px) {
+        #intro-text {
+          font-size: 2.3em;
+        }
+        #timer {
+          font-size: 1.45em;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <button
+      id="reduce-toggle"
+      type="button"
+      aria-label="Reduce visual and audio effects"
+    >
+      Reduce effects: OFF
+    </button>
+
+    <div class="hard-glitch" id="glitch-layer"></div>
+
+    <div
+      id="secret-layer"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Secret message"
+    >
+      <div id="secret-msg">HOLIDAY EASTER EGG</div>
+      <div class="secret-detail">
+        You found the hidden carol.<br /><br />
+        PROTOCOL: <span style="color: var(--red); font-weight: bold">NOEL</span
+        ><br />
+        > Be kind in silence.<br />
+        > Call someone you miss.<br />
+        > Give without keeping score.<br /><br />
+        <span class="blink-text">MERRY CHRISTMAS</span><br /><br />
+        [Press ESC / Tap to Close]
+      </div>
+    </div>
+
+    <div id="entry-overlay">
+      <div id="entry-text">[ INITIATE HOLIDAY PROTOCOL ]</div>
+    </div>
+
+    <div id="intro-sequence">
+      <div id="intro-text"></div>
+    </div>
+
+    <div id="trace-log" class="trace-log"></div>
+
+    <div id="terminal-container">
+      <div id="loading-sequence"></div>
+      <div id="manifesto-text"></div>
+      <span class="cursor"></span>
+      <div id="progress-container"><div id="progress-bar"></div></div>
+    </div>
+
+    <div id="countdown">
+      AWAITING CHRISTMAS SIGNAL...
+      <span id="timer">00d 00h 00m 00s</span>
+      <div
+        style="
+          margin-top: 10px;
+          font-size: 12px;
+          color: #aa0000;
+          letter-spacing: 1px;
+        "
+      >
+        When the timer reaches zero, the celebration link unlocks.
+      </div>
+    </div>
+
+    <a id="hidden-link" href="#" target="_self" rel="noopener"
+      >>>> OPEN THE CELEBRATION <<<</a
+    >
+
+    <script>
+      /***********************
+       * HOLIDAY TEMPLATE
+       ************************/
+
+      // Secret code "NOEL" via ASCII codes
+      const _secret = [78, 79, 69, 76]; // N O E L
+
+      // Where the reveal button goes after countdown ends
+      const _celebrationLink = "celebration.html";
+
+      // Audio engine
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      let masterGain = audioCtx.createGain();
+      masterGain.connect(audioCtx.destination);
+      masterGain.gain.value = 1.0;
+
+      let droneOsc = null;
+      let reduceEffects = false;
+
+      // Helper: mute/quiet everything when reduce effects is ON
+      function setAudioLevel() {
+        masterGain.gain.value = reduceEffects ? 0.0 : 1.0;
+      }
+
+      // Softer sounds (less “panic”, more “ritual”)
+      function playSoftChime() {
+        if (reduceEffects) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+        osc.frequency.exponentialRampToValueAtTime(
+          660,
+          audioCtx.currentTime + 0.07
+        ); // E5-ish
+        gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          audioCtx.currentTime + 0.1
+        );
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      }
+
+      function playDataTick() {
+        if (reduceEffects) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(260, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(
+          1200,
+          audioCtx.currentTime + 0.03
+        );
+        gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          audioCtx.currentTime + 0.05
+        );
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.06);
+      }
+
+      function startInitialDrone() {
+        if (reduceEffects) return;
+        if (droneOsc) return;
+        droneOsc = audioCtx.createOscillator();
+        const droneGain = audioCtx.createGain();
+        droneOsc.type = "sine";
+        droneOsc.frequency.value = 38;
+        droneGain.gain.value = 0.02;
+        droneOsc.connect(droneGain);
+        droneGain.connect(masterGain);
+        droneOsc.start();
+      }
+
+      function playGlitchBurst() {
+        if (reduceEffects) return;
+        const bufferSize = audioCtx.sampleRate * 0.22;
+        const buffer = audioCtx.createBuffer(
+          1,
+          bufferSize,
+          audioCtx.sampleRate
+        );
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+
+        const nGain = audioCtx.createGain();
+        nGain.gain.value = 0.25;
+
+        noise.connect(nGain);
+        nGain.connect(masterGain);
+        noise.start();
+        noise.stop(audioCtx.currentTime + 0.22);
+      }
+
+      function cutThePower() {
+        // In reduce effects mode, we don't do dramatic power cuts.
+        if (reduceEffects) return;
+        masterGain.gain.setValueAtTime(
+          masterGain.gain.value,
+          audioCtx.currentTime
+        );
+        masterGain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          audioCtx.currentTime + 0.01
+        );
+        setTimeout(() => {
+          try {
+            masterGain.disconnect();
+          } catch (e) {}
+        }, 50);
+      }
+
+      // Secret keyword detector
+      function _checkSecret(input) {
+        if (input.length !== _secret.length) return false;
+        for (let i = 0; i < input.length; i++) {
+          if (input.charCodeAt(i) !== _secret[i]) return false;
+        }
+        return true;
+      }
+
+      // Console flavor (“tech ritual” vibes)
+      console.log(
+        "%c HOLIDAY PROTOCOL ONLINE.",
+        "color: red; font-size: 18px; background: black;"
+      );
+      console.log(
+        "%c Synchronizing Christmas Signal...",
+        "color: #33ff33; background: black;"
+      );
+
+      // Secret layer close handling
+      let _buf = "";
+      document.addEventListener("keydown", (e) => {
+        const secretLayer = document.getElementById("secret-layer");
+
+        if (e.key === "Escape" && secretLayer.style.display === "flex") {
+          secretLayer.style.display = "none";
+          return;
+        }
+
+        _buf += e.key.toUpperCase();
+        if (_buf.length > 10) _buf = _buf.slice(-10);
+        const last4 = _buf.slice(-4);
+
+        if (_checkSecret(last4)) {
+          _buf = "";
+          if (!reduceEffects) playSoftChime();
+          secretLayer.style.display = "flex";
+          console.log(
+            "%c >>> NOEL ACKNOWLEDGED <<<",
+            "color: red; font-weight: bold;"
+          );
+        }
+      });
+
+      document.getElementById("secret-layer").addEventListener("click", () => {
+        document.getElementById("secret-layer").style.display = "none";
+      });
+
+      // Fake trace log (less “hacker”, more “seasonal system”)
+      function runTraceLog() {
+        const logBox = document.getElementById("trace-log");
+        logBox.style.display = "block";
+        setInterval(() => {
+          const id = Math.floor(Math.random() * 9000 + 1000);
+          const action = [
+            "SYNCING_LIGHTS",
+            "BUFFERING_CAROLS",
+            "ROUTING_KINDNESS",
+            "PATCHING_GRATITUDE",
+            "AWAITING_CHRISTMAS",
+          ][Math.floor(Math.random() * 5)];
+
+          logBox.innerHTML += `<div>> ${action} [PKT-${id}]</div>`;
+          logBox.scrollTop = logBox.scrollHeight;
+          if (logBox.children.length > 6) logBox.firstChild.remove();
+        }, 320);
+      }
+
+      // Reduce effects toggle
+      const reduceBtn = document.getElementById("reduce-toggle");
+      reduceBtn.addEventListener("click", async () => {
+        // If audio is blocked until interaction, this click counts as interaction.
+        if (audioCtx.state === "suspended") await audioCtx.resume();
+
+        reduceEffects = !reduceEffects;
+        document.body.classList.toggle("reduce-effects", reduceEffects);
+        reduceBtn.textContent = `Reduce effects: ${
+          reduceEffects ? "ON" : "OFF"
+        }`;
+        setAudioLevel();
+
+        // If the drone exists and we turn reduce ON, stop it.
+        if (reduceEffects && droneOsc) {
+          try {
+            droneOsc.stop();
+          } catch (e) {}
+          droneOsc = null;
+        }
+      });
+
+      // Entry overlay start
+      const overlay = document.getElementById("entry-overlay");
+      const startAll = async () => {
+        if (audioCtx.state === "suspended") await audioCtx.resume();
+        setAudioLevel();
+
+        // Fullscreen is nice
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) elem.requestFullscreen().catch(() => {});
+
+        overlay.style.display = "none";
+        startIntroSequence();
+      };
+      overlay.addEventListener("click", startAll);
+      overlay.addEventListener("touchstart", startAll, { passive: true });
+
+      // Intro sequence
+      async function startIntroSequence() {
+        const introDiv = document.getElementById("intro-sequence");
+        const introText = document.getElementById("intro-text");
+
+        const words = [
+          "WAKE UP",
+          "LIGHTS ON",
+          "FIND JOY",
+          "CALL HOME",
+          "KINDNESS ONLINE",
+          "HOLIDAY SYNC",
+          "CHRISTMAS INBOUND",
+          "NOEL",
+        ];
+
+        introDiv.style.display = "flex";
+        startInitialDrone();
+
+        let counter = 0;
+        const interval = setInterval(
+          () => {
+            introText.innerText =
+              words[Math.floor(Math.random() * words.length)];
+
+            if (!reduceEffects) {
+              if (counter % 2 === 0) {
+                introDiv.style.background = "#fff";
+                introText.style.color = "#000";
+              } else {
+                introDiv.style.background = "#000";
+                introText.style.color = "#fff";
+              }
+            } else {
+              introDiv.style.background = "#000";
+              introText.style.color = "#fff";
+            }
+
+            playDataTick();
+            counter++;
+          },
+          reduceEffects ? 260 : 150
+        );
+
+        setTimeout(
+          () => {
+            clearInterval(interval);
+            introDiv.style.background = "#000";
+            introText.innerText = "";
+            introDiv.classList.add("tv-off");
+
+            setTimeout(() => {
+              introDiv.style.display = "none";
+              runTraceLog();
+              document.getElementById("terminal-container").style.display =
+                "block";
+              runLoading();
+            }, 800);
+          },
+          reduceEffects ? 1800 : 2500
+        );
+      }
+
+      // Terminal + manifesto
+      const loadingDiv = document.getElementById("loading-sequence");
+      const manifestoDiv = document.getElementById("manifesto-text");
+      const progressContainer = document.getElementById("progress-container");
+      const progressBar = document.getElementById("progress-bar");
+
+      const manifestoContent = `[SYSTEM LOG: HOLIDAY PROTOCOL]
+
+Stop scrolling.
+Look at the screen.
+
+In a world running hot...
+we still get one patch every year:
+
+A reminder to be soft.
+A reminder to be human.
+A reminder to give without announcing it.
+
+This is not an ad.
+This is not an algorithm.
+This is your signal.
+
+> root@holiday:~# awaiting_christmas...
+`;
+
+      async function runLoading() {
+        const steps = [
+          "BOOTING HOLIDAY CORE...",
+          "SYNCING LIGHTS...",
+          "BUFFERING CAROLS...",
+          "ROUTING WARMTH...",
+          "FINALIZING COUNTDOWN...",
+        ];
+
+        for (let i = 0; i < steps.length; i++) {
+          loadingDiv.innerHTML += `<div>> ${steps[i]}</div>`;
+          playDataTick();
+          await new Promise((r) => setTimeout(r, reduceEffects ? 220 : 200));
+        }
+
+        loadingDiv.style.display = "none";
+        progressContainer.style.display = "block";
+        typeWriter(manifestoContent);
+      }
+
+      let txtIndex = 0;
+      function typeWriter(text) {
+        if (txtIndex < text.length) {
+          manifestoDiv.innerHTML += text.charAt(txtIndex);
+          txtIndex++;
+          playDataTick();
+          progressBar.style.width = (txtIndex / text.length) * 100 + "%";
+          setTimeout(
+            () => typeWriter(text),
+            reduceEffects ? 12 : Math.random() * 10 + 5
+          );
+        } else {
+          // End terminal, begin countdown
+          if (!reduceEffects) cutThePower();
+          document.querySelector(".cursor").style.display = "none";
+          progressContainer.style.display = "none";
+
+          setTimeout(
+            () => {
+              if (!reduceEffects) {
+                playGlitchBurst();
+                document.getElementById("glitch-layer").style.display = "block";
+                document.body.classList.add("shake-screen");
+              }
+
+              setTimeout(
+                () => {
+                  document.getElementById("glitch-layer").style.display =
+                    "none";
+                  document.body.classList.remove("shake-screen");
+
+                  document.getElementById("terminal-container").style.display =
+                    "none";
+                  document.getElementById("countdown").style.display = "block";
+                  startCountdown();
+                },
+                reduceEffects ? 0 : 280
+              );
+            },
+            reduceEffects ? 300 : 900
+          );
+        }
+      }
+
+      // countdown: local Christmas midnight
+      function getNextChristmasLocal() {
+        const now = new Date();
+        const year = now.getFullYear();
+        let target = new Date(year, 11, 25, 0, 0, 0, 0); // Dec is month 11 (0-based)
+
+        if (target.getTime() <= now.getTime()) {
+          target = new Date(year + 1, 11, 25, 0, 0, 0, 0);
+        }
+        return target;
+      }
+
+      function startCountdown() {
+        const target = getNextChristmasLocal();
+        const countdownEl = document.getElementById("countdown");
+        const timerEl = document.getElementById("timer");
+        const linkEl = document.getElementById("hidden-link");
+
+        linkEl.href = _celebrationLink;
+
+        // Extra clarity for humans: show which date/time we are counting down to (local)
+        const localLabel = document.createElement("div");
+        localLabel.style.marginTop = "10px";
+        localLabel.style.fontSize = "12px";
+        localLabel.style.color = "#aa0000";
+        localLabel.style.letterSpacing = "1px";
+        localLabel.textContent = `Target: ${target.toLocaleString()}`;
+        countdownEl.appendChild(localLabel);
+
+        const tick = () => {
+          const now = new Date().getTime();
+          const distance = target.getTime() - now;
+
+          if (!reduceEffects) playSoftChime();
+
+          if (distance <= 0) {
+            timerEl.innerHTML = "CELEBRATION UNLOCKED";
+            linkEl.style.display = "inline-block";
+            return;
+          }
+
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor(
+            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          );
+          const minutes = Math.floor(
+            (distance % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+          timerEl.innerHTML =
+            (days < 10 ? "0" + days : days) +
+            "d " +
+            (hours < 10 ? "0" + hours : hours) +
+            "h " +
+            (minutes < 10 ? "0" + minutes : minutes) +
+            "m " +
+            (seconds < 10 ? "0" + seconds : seconds) +
+            "s";
+
+          setTimeout(tick, 1000);
+        };
+
+        tick();
+      }
+    </script>
+  </body>
+</html>

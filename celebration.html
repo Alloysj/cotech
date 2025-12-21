@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Celebration Unlocked // Merry Christmas</title>
+  <meta name="description" content="Merry Christmas! An animated holiday card with snow, Santa on ice, and music." />
+  <style>
+    :root{
+      --bg1:#02040a;
+      --bg2:#061227;
+      --glow:#ffe7a3;
+      --text:#ffffff;
+      --accent:#ff3b3b;
+      --ice1: rgba(130, 210, 255, 0.22);
+      --ice2: rgba(60, 170, 255, 0.12);
+      --ice3: rgba(255,255,255, 0.10);
+      --edge: rgba(255,255,255,0.18);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden; /* no scrollbar */
+      background: radial-gradient(1200px 700px at 50% 25%, #0b2a52 0%, var(--bg2) 35%, var(--bg1) 100%);
+      font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+      color: var(--text);
+    }
+
+    /* Subtle grain + vignette */
+    .scene {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    .scene::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(1000px 700px at 50% 30%, rgba(255,255,255,0.08), transparent 60%),
+        radial-gradient(900px 600px at 50% 110%, rgba(100,220,255,0.10), transparent 55%),
+        radial-gradient(600px 400px at 10% 20%, rgba(255,170,170,0.06), transparent 60%),
+        radial-gradient(600px 400px at 90% 25%, rgba(255,235,180,0.06), transparent 60%);
+      z-index: 0;
+      pointer-events:none;
+    }
+    .scene::after{
+      content:"";
+      position:absolute; inset:-40px;
+      background: radial-gradient(closest-side, transparent 60%, rgba(0,0,0,0.55) 100%);
+      z-index: 0;
+      pointer-events:none;
+    }
+
+    /* ===== MESSAGE (center) ===== */
+    .card {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      z-index: 5;
+      padding: 20px;
+      text-align: center;
+      pointer-events: none; /* let clicks pass to overlay/music */
+    }
+
+    .message-wrap{
+      max-width: 900px;
+      padding: clamp(18px, 2.2vw, 28px) clamp(18px, 2.6vw, 34px);
+      border-radius: 22px;
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow:
+        0 0 40px rgba(255, 230, 160, 0.10),
+        0 18px 60px rgba(0,0,0,0.35);
+      backdrop-filter: blur(6px);
+    }
+
+    .headline{
+      font-size: clamp(34px, 4.4vw, 68px);
+      letter-spacing: 0.6px;
+      margin: 0 0 8px 0;
+      line-height: 1.02;
+      text-shadow: 0 0 24px rgba(255,231,163,0.18);
+    }
+
+    .subline{
+      margin: 0;
+      font-size: clamp(14px, 1.5vw, 18px);
+      opacity: 0.92;
+      line-height: 1.5;
+    }
+
+    .spark {
+      display: inline-block;
+      color: var(--glow);
+      text-shadow: 0 0 18px rgba(255,231,163,0.35);
+      animation: twinkle 2.2s ease-in-out infinite;
+    }
+    @keyframes twinkle{
+      0%,100% { transform: translateY(0); filter: brightness(1); }
+      50% { transform: translateY(-1px); filter: brightness(1.35); }
+    }
+
+    /* ===== ICE (bottom strip) ===== */
+    .ice {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: min(26vh, 220px);
+      z-index: 2;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.55), transparent 60%),
+        linear-gradient(to top, rgba(255,255,255,0.05), transparent 55%),
+        radial-gradient(800px 160px at 50% 100%, var(--ice1), transparent 70%),
+        radial-gradient(900px 200px at 20% 105%, var(--ice2), transparent 75%),
+        radial-gradient(900px 200px at 80% 105%, var(--ice2), transparent 75%),
+        linear-gradient(to top, rgba(70, 190, 255, 0.10), rgba(10, 40, 70, 0.0));
+      border-top: 1px solid rgba(255,255,255,0.10);
+    }
+
+    /* Ice shimmer */
+    .ice::before{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        repeating-linear-gradient(
+          110deg,
+          rgba(255,255,255,0.00) 0px,
+          rgba(255,255,255,0.00) 20px,
+          rgba(255,255,255,0.05) 28px,
+          rgba(255,255,255,0.00) 36px
+        );
+      opacity: 0.35;
+      transform: translateX(-20%);
+      animation: iceShift 8s linear infinite;
+      pointer-events:none;
+    }
+    @keyframes iceShift{
+      0% { transform: translateX(-30%); }
+      100% { transform: translateX(30%); }
+    }
+
+    /* ===== SNOW (CSS particles) ===== */
+    .snow {
+      position:absolute;
+      inset:0;
+      z-index: 4;
+      pointer-events:none;
+      filter: drop-shadow(0 0 4px rgba(255,255,255,0.10));
+    }
+
+    /* We use 3 layers with different sizes/speeds for depth */
+    .snow-layer{
+      position:absolute;
+      inset:-15vh 0 0 0; /* start above */
+      background-repeat: repeat;
+      animation: snowFall linear infinite;
+      opacity: 0.8;
+    }
+
+    /* Small snow */
+    .snow-layer.s1{
+      background-image:
+        radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.95) 55%, transparent 60%),
+        radial-gradient(1px 1px at 80px 60px, rgba(255,255,255,0.9) 60%, transparent 65%),
+        radial-gradient(1px 1px at 140px 10px, rgba(255,255,255,0.8) 60%, transparent 65%),
+        radial-gradient(2px 2px at 200px 90px, rgba(255,255,255,0.95) 55%, transparent 60%),
+        radial-gradient(1px 1px at 260px 40px, rgba(255,255,255,0.85) 60%, transparent 65%),
+        radial-gradient(1px 1px at 320px 80px, rgba(255,255,255,0.8) 60%, transparent 65%);
+      background-size: 360px 120px;
+      animation-duration: 10s;
+      animation-timing-function: linear;
+      opacity: 0.55;
+      transform: translateX(0);
+    }
+
+    /* Medium snow */
+    .snow-layer.s2{
+      background-image:
+        radial-gradient(3px 3px at 30px 50px, rgba(255,255,255,0.95) 55%, transparent 60%),
+        radial-gradient(2px 2px at 110px 20px, rgba(255,255,255,0.90) 55%, transparent 60%),
+        radial-gradient(3px 3px at 190px 90px, rgba(255,255,255,0.95) 55%, transparent 60%),
+        radial-gradient(2px 2px at 260px 35px, rgba(255,255,255,0.88) 55%, transparent 60%),
+        radial-gradient(3px 3px at 340px 75px, rgba(255,255,255,0.95) 55%, transparent 60%);
+      background-size: 380px 140px;
+      animation-duration: 14s;
+      opacity: 0.65;
+    }
+
+    /* Big, slow snow (foreground) */
+    .snow-layer.s3{
+      background-image:
+        radial-gradient(5px 5px at 40px 40px, rgba(255,255,255,0.92) 55%, transparent 60%),
+        radial-gradient(4px 4px at 160px 90px, rgba(255,255,255,0.90) 55%, transparent 60%),
+        radial-gradient(5px 5px at 280px 30px, rgba(255,255,255,0.92) 55%, transparent 60%),
+        radial-gradient(4px 4px at 360px 110px, rgba(255,255,255,0.90) 55%, transparent 60%);
+      background-size: 420px 160px;
+      animation-duration: 20s;
+      opacity: 0.45;
+    }
+
+    @keyframes snowFall{
+      0% { transform: translateY(-10vh) translateX(0px); }
+      100% { transform: translateY(110vh) translateX(80px); }
+    }
+
+    /* ===== SANTA + CART (pure CSS shapes) ===== */
+    .santa-run {
+      position: absolute;
+      left: -40vw;
+      bottom: calc(min(26vh, 220px) - 92px); /* sit on ice */
+      width: 40vw;
+      height: 120px;
+      z-index: 6;
+      animation: glide 18s linear infinite;
+      pointer-events:none;
+      filter: drop-shadow(0 10px 22px rgba(0,0,0,0.40));
+    }
+
+    @keyframes glide{
+      0% { transform: translateX(0); }
+      100% { transform: translateX(160vw); }
+    }
+
+    /* The entire rig */
+    .rig{
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 520px;
+      height: 120px;
+      transform: scale(0.95);
+    }
+
+    /* Ice skid line */
+    .skid {
+      position:absolute;
+      left: 0;
+      bottom: 6px;
+      width: 520px;
+      height: 3px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.22), transparent);
+      opacity: 0.55;
+      filter: blur(0.2px);
+    }
+
+    /* Santa (simple silhouette) */
+    .santa {
+      position:absolute;
+      left: 70px;
+      bottom: 28px;
+      width: 92px;
+      height: 80px;
+    }
+
+    .santa .body{
+      position:absolute;
+      left: 22px;
+      bottom: 0;
+      width: 50px;
+      height: 50px;
+      background: #d01414;
+      border-radius: 18px 18px 12px 12px;
+      box-shadow: inset 0 -10px 0 rgba(0,0,0,0.10);
+    }
+
+    .santa .belt{
+      position:absolute;
+      left: 22px;
+      bottom: 16px;
+      width: 50px;
+      height: 10px;
+      background: #141414;
+      border-radius: 6px;
+      opacity: 0.95;
+    }
+
+    .santa .head{
+      position:absolute;
+      left: 35px;
+      bottom: 44px;
+      width: 26px;
+      height: 26px;
+      background: #f2d3b1;
+      border-radius: 50%;
+      box-shadow: inset 0 -5px 0 rgba(0,0,0,0.06);
+    }
+
+    .santa .beard{
+      position:absolute;
+      left: 33px;
+      bottom: 38px;
+      width: 30px;
+      height: 18px;
+      background: #fff;
+      border-radius: 0 0 16px 16px;
+      opacity: 0.95;
+    }
+
+    .santa .hat{
+      position:absolute;
+      left: 32px;
+      bottom: 60px;
+      width: 30px;
+      height: 18px;
+      background: #d01414;
+      border-radius: 14px 14px 6px 6px;
+      transform: rotate(-12deg);
+    }
+
+    .santa .pom{
+      position:absolute;
+      left: 58px;
+      bottom: 64px;
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    .santa .arm{
+      position:absolute;
+      left: 8px;
+      bottom: 26px;
+      width: 30px;
+      height: 10px;
+      background: #d01414;
+      border-radius: 10px;
+      transform-origin: right center;
+      animation: wave 0.9s ease-in-out infinite;
+    }
+    @keyframes wave{
+      0%,100% { transform: rotate(8deg); }
+      50% { transform: rotate(-18deg); }
+    }
+
+    /* Rope / handle line to cart */
+    .rope{
+      position:absolute;
+      left: 20px;
+      bottom: 52px;
+      width: 120px;
+      height: 2px;
+      background: rgba(255,255,255,0.28);
+      transform: rotate(-8deg);
+    }
+
+    /* Cart / sleigh */
+    .cart{
+      position:absolute;
+      left: 170px;
+      bottom: 18px;
+      width: 170px;
+      height: 70px;
+    }
+
+    .cart .bed{
+      position:absolute;
+      left: 0;
+      bottom: 14px;
+      width: 170px;
+      height: 36px;
+      background: rgba(20,20,20,0.85);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .cart .gift1, .cart .gift2, .cart .gift3{
+      position:absolute;
+      bottom: 32px;
+      border-radius: 8px;
+      box-shadow: 0 8px 14px rgba(0,0,0,0.25);
+    }
+    .cart .gift1{
+      left: 20px;
+      width: 44px; height: 34px;
+      background: #1fbf6b;
+    }
+    .cart .gift2{
+      left: 72px;
+      width: 52px; height: 40px;
+      background: #ff3b3b;
+    }
+    .cart .gift3{
+      left: 130px;
+      width: 36px; height: 28px;
+      background: #2aa7ff;
+    }
+    .cart .ribbon{
+      position:absolute;
+      left: 0; top: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events:none;
+    }
+    .cart .gift1::after, .cart .gift2::after, .cart .gift3::after{
+      content:"";
+      position:absolute;
+      left: 50%;
+      top: 0;
+      width: 6px;
+      height: 100%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.65);
+      border-radius: 4px;
+      opacity: 0.7;
+    }
+
+    /* Cart runners (ice) */
+    .cart .runner{
+      position:absolute;
+      left: 12px;
+      bottom: 2px;
+      width: 150px;
+      height: 8px;
+      border-bottom: 3px solid rgba(255,255,255,0.28);
+      border-radius: 0 0 30px 30px;
+    }
+
+    /* ===== MUSIC ===== */
+    audio { display:none; }
+
+    /* Start overlay (for audio permissions) */
+    .start-overlay{
+      position:absolute;
+      inset:0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      background: rgba(0,0,0,0.70);
+      backdrop-filter: blur(6px);
+      text-align: center;
+      padding: 24px;
+    }
+    .start-box{
+      max-width: 720px;
+      border-radius: 22px;
+      padding: 22px 22px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.35);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.40);
+    }
+    .start-title{
+      margin: 0 0 8px 0;
+      font-size: clamp(18px, 2.1vw, 24px);
+      letter-spacing: 0.6px;
+    }
+    .start-desc{
+      margin: 0 0 16px 0;
+      opacity: 0.9;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+    .start-btn{
+      appearance:none;
+      border: 1px solid rgba(255,231,163,0.35);
+      background: rgba(255,231,163,0.12);
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      cursor:pointer;
+      transition: transform 0.08s ease, background 0.2s ease;
+    }
+    .start-btn:hover{ background: rgba(255,231,163,0.18); }
+    .start-btn:active{ transform: translateY(1px); }
+
+    /* Small music control */
+    .music-toggle{
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 60;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight: 650;
+      letter-spacing: 0.6px;
+      backdrop-filter: blur(6px);
+    }
+    .music-toggle:hover{
+      background: rgba(0,0,0,0.58);
+    }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .snow-layer, .santa-run, .santa .arm, .ice::before { animation: none !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="scene" id="scene">
+
+    <!-- Snow -->
+    <div class="snow" aria-hidden="true">
+      <div class="snow-layer s1"></div>
+      <div class="snow-layer s2"></div>
+      <div class="snow-layer s3"></div>
+    </div>
+
+    <!-- Message -->
+    <div class="card" aria-label="Christmas message">
+      <div class="message-wrap">
+        <h1 class="headline">Merry Christmas <span class="spark">✨</span></h1>
+        <p class="subline">
+          The countdown is over. The signal arrived.<br />
+          Wishing you warmth, peace, and a little magic today.
+        </p>
+      </div>
+    </div>
+
+    <!-- Santa + cart gliding -->
+    <div class="santa-run" aria-hidden="true">
+      <div class="rig">
+        <div class="skid"></div>
+
+        <div class="santa">
+          <div class="arm"></div>
+          <div class="hat"></div>
+          <div class="pom"></div>
+          <div class="head"></div>
+          <div class="beard"></div>
+          <div class="body"></div>
+          <div class="belt"></div>
+        </div>
+
+        <div class="rope"></div>
+
+        <div class="cart">
+          <div class="bed"></div>
+          <div class="runner"></div>
+          <div class="gift1"></div>
+          <div class="gift2"></div>
+          <div class="gift3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ice -->
+    <div class="ice" aria-hidden="true"></div>
+
+    <!-- Audio -->
+    <audio id="bg-music" loop preload="auto">
+      <source src="assets/santa-song.mp3" type="audio/mpeg" />
+    </audio>
+
+    <!-- Start overlay (needed for autoplay policies) -->
+    <div class="start-overlay" id="startOverlay">
+      <div class="start-box">
+        <h2 class="start-title">🎄 Celebration Unlocked</h2>
+        <p class="start-desc">
+          Tap to start the music and reveal the full animated card.<br />
+          (Browsers block autoplay audio unless you interact—this is normal.)
+        </p>
+        <button class="start-btn" id="startBtn" type="button">START CELEBRATION</button>
+      </div>
+    </div>
+
+    <!-- Music toggle -->
+    <button class="music-toggle" id="musicToggle" type="button" aria-label="Toggle background music">
+      Music: OFF
+    </button>
+  </div>
+
+  <script>
+    const audio = document.getElementById('bg-music');
+    const startOverlay = document.getElementById('startOverlay');
+    const startBtn = document.getElementById('startBtn');
+    const toggle = document.getElementById('musicToggle');
+
+    let musicOn = false;
+
+    function setMusicLabel(){
+      toggle.textContent = `Music: ${musicOn ? 'ON' : 'OFF'}`;
+    }
+
+    async function startMusic(){
+      // Be kind to ears.
+      audio.volume = 0.80;
+      try {
+        await audio.play();
+        musicOn = true;
+        setMusicLabel();
+        // Hide overlay once music is permitted
+        startOverlay.style.display = 'none';
+      } catch (e) {
+        // If blocked, user can try again.
+        musicOn = false;
+        setMusicLabel();
+        startBtn.textContent = 'TAP AGAIN TO ENABLE MUSIC';
+        console.warn('Audio play blocked until user gesture:', e);
+      }
+    }
+
+    function stopMusic(){
+      audio.pause();
+      musicOn = false;
+      setMusicLabel();
+    }
+
+    // Start button (guaranteed user gesture)
+    startBtn.addEventListener('click', startMusic);
+
+    // Toggle button
+    toggle.addEventListener('click', async () => {
+      if (!musicOn) await startMusic();
+      else stopMusic();
+    });
+
+    // If user clicks anywhere on overlay, treat it as "start"
+    startOverlay.addEventListener('click', (e) => {
+      if (e.target === startOverlay) startMusic();
+    });
+
+    // Initialize label
+    setMusicLabel();
+  </script>
+</body>
+</html>
