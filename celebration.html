@@ -302,6 +302,57 @@
       box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
     }
 
+    /* ===== CAROUSEL ===== */
+    .carousel-container {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      overflow: hidden;
+      pointer-events: none; /* Let clicks pass through to potential interactive elements if needed */
+    }
+
+    .carousel-track {
+      display: flex;
+      height: 100%;
+      width: max-content;
+      transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .carousel-slide {
+      width: 100vw;
+      height: 100%;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    /* Message wrap adjustments for carousel */
+    .message-wrap {
+      /* Keep existing styles but ensure pointer events are on for text selection if needed */
+      pointer-events: auto; 
+    }
+
+    .quote-text {
+      font-size: clamp(24px, 3vw, 36px);
+      line-height: 1.4;
+      margin-bottom: 24px;
+      font-style: italic;
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .quote-author {
+      font-size: clamp(16px, 2vw, 22px);
+      color: var(--gold);
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: right;
+      width: 100%;
+      display: block;
+    }
+
     /* Respect reduced motion */
     @media (prefers-reduced-motion: reduce) {
       .particle, .confetti-piece, .countdown-number, .message-wrap {
@@ -338,35 +389,41 @@
     <!-- Confetti -->
     <div class="confetti" id="confettiContainer" aria-hidden="true"></div>
 
-    <!-- Message -->
-    <div class="card" aria-label="New Year message">
-      <div class="message-wrap">
-        <h1 class="headline">HAPPY NEW YEAR</h1>
-        <div class="year-2026">2026</div>
-        <p class="subline">
-          The countdown is complete. The future has arrived.<br />
-          Wishing you joy, success, and endless possibilities in the new year.
-        </p>
-        
-        <!-- Live countdown to next New Year -->
-        <div class="countdown" id="countdownDisplay">
-          <div class="countdown-item">
-            <div class="countdown-number" id="days">00</div>
-            <div class="countdown-label">Days</div>
-          </div>
-          <div class="countdown-item">
-            <div class="countdown-number" id="hours">00</div>
-            <div class="countdown-label">Hours</div>
-          </div>
-          <div class="countdown-item">
-            <div class="countdown-number" id="minutes">00</div>
-            <div class="countdown-label">Minutes</div>
-          </div>
-          <div class="countdown-item">
-            <div class="countdown-number" id="seconds">00</div>
-            <div class="countdown-label">Seconds</div>
+    <!-- Carousel Container -->
+    <div class="carousel-container" id="carouselContainer">
+      <div class="carousel-track" id="track">
+        <!-- Slide 1: Welcome Message (Original) -->
+        <div class="carousel-slide">
+          <div class="message-wrap" aria-label="New Year message">
+            <h1 class="headline">HAPPY NEW YEAR</h1>
+            <div class="year-2026">2026</div>
+            <p class="subline">
+              The countdown is complete. The future has arrived.<br />
+              Wishing you joy, success, and endless possibilities in the new year.
+            </p>
+            
+            <!-- Live countdown to next New Year -->
+            <div class="countdown" id="countdownDisplay">
+              <div class="countdown-item">
+                <div class="countdown-number" id="days">00</div>
+                <div class="countdown-label">Days</div>
+              </div>
+              <div class="countdown-item">
+                <div class="countdown-number" id="hours">00</div>
+                <div class="countdown-label">Hours</div>
+              </div>
+              <div class="countdown-item">
+                <div class="countdown-number" id="minutes">00</div>
+                <div class="countdown-label">Minutes</div>
+              </div>
+              <div class="countdown-item">
+                <div class="countdown-number" id="seconds">00</div>
+                <div class="countdown-label">Seconds</div>
+              </div>
+            </div>
           </div>
         </div>
+        <!-- Quote slides will be injected here -->
       </div>
     </div>
 
@@ -603,7 +660,64 @@
       // Clear existing fireworks and confetti
       fireworksContainer.innerHTML = '';
       confettiContainer.innerHTML = '';
+      // Reset carousel width calculation
+      updateCarousel();
     });
+
+    /* ===== CAROUSEL LOGIC ===== */
+    const track = document.getElementById('track');
+    const quotes = [
+      { text: "Cheers to a new year and another chance for us to get it right.", author: "Oprah Winfrey" },
+      { text: "Take a leap of faith and begin this wondrous new year by believing.", author: "Sarah Ban Breathnach" },
+      { text: "Write it on your heart that every day is the best day in the year.", author: "Ralph Waldo Emerson" },
+      { text: "New year — a new chapter, new verse, or just the same old story? Ultimately we write it.", author: "Alex Morritt" },
+      { text: "Be always at war with your vices, at peace with your neighbors, and let each new year find you a better man.", author: "Benjamin Franklin" },
+      { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+      { text: "Hope smiles from the threshold of the year to come.", author: "Alfred, Lord Tennyson" },
+      { text: "New beginnings are often disguised as painful endings.", author: "Lao Tzu" },
+      { text: "You don't have to see the whole staircase, just take the first step.", author: "Martin Luther King Jr." },
+      { text: "Every new beginning comes from some other beginning’s end.", author: "Seneca" },
+      { text: "New year is the glittering light to brighten the dream-laden pathway of future.", author: "Munia Khan" },
+      { text: "Year's end is neither an end nor a beginning but a going on.", author: "Hal Borland" },
+      { text: "The bad news is time flies. The good news is you're the pilot.", author: "Michael Altshuler" },
+      { text: "Each day is a chance to begin again. Don't focus on the failures of yesterday.", author: "Catherine Pulsifer" },
+      { text: "Cheers to a gracious New Year. May we uphold one another in peace and love.", author: "Lailah Gifty Akita" },
+      { text: "This is a new year. A new beginning. And things will change.", author: "Taylor Swift" }
+    ];
+
+    let currentSlide = 0;
+    
+    function createQuoteSlide(quote) {
+      const slide = document.createElement('div');
+        slide.className = 'carousel-slide';
+        slide.innerHTML = `
+          <div class="message-wrap">
+            <div class="quote-text">"${quote.text}"</div>
+            <div class="quote-author">— ${quote.author}</div>
+          </div>
+        `;
+        return slide;
+    }
+
+    // Initialize Quotes
+    quotes.forEach(quote => {
+      track.appendChild(createQuoteSlide(quote));
+    });
+
+    const totalSlides = 1 + quotes.length; // 1 for the original card
+
+    function updateCarousel() {
+      const slideWidth = window.innerWidth;
+      track.style.transform = `translateX(-${currentSlide * slideWidth}px)`;
+    }
+
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % totalSlides;
+      updateCarousel();
+    }
+
+    // Start auto-scroll
+    setInterval(nextSlide, 5000);
   </script>
 </body>
 </html>
