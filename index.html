@@ -919,7 +919,7 @@
                   document.getElementById("terminal-container").style.display =
                     "none";
                   document.getElementById("countdown").style.display = "block";
-                  startCountdown();
+                  showPortal();
                 },
                 reduceEffects ? 0 : 280
               );
@@ -944,71 +944,33 @@
         return target;
       }
 
-      function startCountdown() {
-        const target = getNextNewYear();
+      function showPortal() {
         const countdownEl = document.getElementById("countdown");
         const timerEl = document.getElementById("timer");
         const linkEl = document.getElementById("hidden-link");
 
         linkEl.href = _celebrationLink;
+        
+        // Show immediate welcome state
+        countdownEl.style.display = "block";
+        countdownEl.innerHTML = "SIGNAL ESTABLISHED";
+        
+        timerEl.innerHTML = "WELCOME 2026";
+        timerEl.style.display = "block";
+        countdownEl.appendChild(timerEl);
 
-        // Show target date
-        const localLabel = document.createElement("div");
-        localLabel.style.marginTop = "10px";
-        localLabel.style.fontSize = "12px";
-        localLabel.style.color = "#0088cc";
-        localLabel.style.letterSpacing = "1px";
-        localLabel.textContent = `Target: ${target.toLocaleString()}`;
-        countdownEl.appendChild(localLabel);
+        linkEl.style.display = "inline-block";
+        
+        if (!reduceEffects) {
+          playFirework();
+          setTimeout(() => playFirework(), 300);
+          setTimeout(() => playFirework(), 600);
+        }
 
-        const tick = () => {
-          const now = new Date().getTime();
-          const distance = target.getTime() - now;
-
-          if (!reduceEffects && distance < 60000) {
-            playChampagnePop();
-          }
-
-          if (distance <= 0) {
-            timerEl.innerHTML = "WELCOME 2026!";
-            linkEl.style.display = "inline-block";
-            if (!reduceEffects) {
-              playFirework();
-              setTimeout(() => playFirework(), 300);
-              setTimeout(() => playFirework(), 600);
-            }
-            
-            // Auto-redirect to celebration
-            setTimeout(() => {
-              window.location.href = _celebrationLink;
-            }, 2000);
-
-            return;
-          }
-
-          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor(
-            (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-          );
-          const minutes = Math.floor(
-            (distance % (1000 * 60 * 60)) / (1000 * 60)
-          );
-          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-          timerEl.innerHTML =
-            (days < 10 ? "0" + days : days) +
-            "d " +
-            (hours < 10 ? "0" + hours : hours) +
-            "h " +
-            (minutes < 10 ? "0" + minutes : minutes) +
-            "m " +
-            (seconds < 10 ? "0" + seconds : seconds) +
-            "s";
-
-          setTimeout(tick, 1000);
-        };
-
-        tick();
+        // Auto-redirect to celebration after a short pause to read the message
+        setTimeout(() => {
+          window.location.href = _celebrationLink;
+        }, 3000);
       }
     </script>
   </body>
